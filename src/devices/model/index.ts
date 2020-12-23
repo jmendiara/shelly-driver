@@ -1,4 +1,4 @@
-export * from './model';
+export * from './common';
 export * from './state';
 export * from './base';
 export * from './shelly1';

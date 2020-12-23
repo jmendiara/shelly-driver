@@ -1,5 +1,4 @@
-import { Shelly1 } from '../devices/shelly1';
-import { RxMqttClient } from 'oropel';
+import { Shelly1 } from '../devices';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 (async function () {
@@ -7,9 +6,6 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     host: '192.168.31.130',
   });
 
-  const mqttClient = new RxMqttClient('mqtt://localhost:1883');
-
-  const ventiladorTopics = mqttClient.topic('shellies/shelly1-2C79FF/relay/0');
   // ventiladorTopics.subscribe((msg) => {
   //   console.log('<===mqtt===|', msg.toString());
   // })
@@ -39,7 +35,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   );
 
   await delay(5000);
-  //sub.unsubscribe();
+  sub.unsubscribe();
 
   // const otro = ventilador.observe('relays.0.ison');
   // otro.subscribe(

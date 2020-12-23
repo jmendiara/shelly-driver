@@ -1,5 +1,5 @@
-import { interval, Observable } from "rxjs";
-import { shareReplay, finalize } from "rxjs/operators";
+import { interval, Observable } from 'rxjs';
+import { shareReplay, finalize } from 'rxjs/operators';
 
 const intervals = new Map<number, Observable<number>>();
 export function getInterval$(cadency: number): Observable<number> {
@@ -12,4 +12,4 @@ export function getInterval$(cadency: number): Observable<number> {
     intervals.set(cadency, interval$);
   }
   return interval$;
-};
+}

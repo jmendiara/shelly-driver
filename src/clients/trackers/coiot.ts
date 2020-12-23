@@ -1,9 +1,9 @@
 import { CoIoTServer, CoIoTStatus } from 'coiot-coap';
-import { ShellyDevice, ShellyPushPropertyType } from '../../devices';
+import { ShellyDevice, ShellyPushPropertyType, StateProperty } from '../../devices';
 import { defer, EMPTY, from, fromEvent, Observable, using } from 'rxjs';
 import { filter, share, switchMap, tap } from 'rxjs/operators';
 import Debug from 'debug';
-import { Observation, PropertyValue } from 'devices/state';
+import { Tracker } from './model';
 
 const debug = Debug('shelly:tracker:coiot');
 /**
@@ -15,21 +15,21 @@ const status$ = using(
     from(server.listen()).pipe(switchMap((client) => fromEvent<CoIoTStatus>(client, 'status', (msg) => msg))),
 ).pipe(share());
 
-interface CoiotObservation {
+interface CoiotStateProperty {
   statusKey: string;
   type: ShellyPushPropertyType;
 }
 
-function toObservation(map: Map<number, CoiotObservation>) {
-  return function (source: Observable<CoIoTStatus>): Observable<Observation> {
+function toStateProperty(map: Map<number, CoiotStateProperty>) {
+  return function (source: Observable<CoIoTStatus>): Observable<StateProperty> {
     return new Observable((subscriber) => {
       source.subscribe((status) => {
         status.payload.G.forEach(([, coiotId, coiotValue]) => {
-          const coiotObservation = map.get(coiotId);
-          if (coiotObservation != null) {
-            const observation: Observation = {
-              key: coiotObservation.statusKey,
-              value: coiotObservation.type(coiotValue),
+          const coiotStateProperty = map.get(coiotId);
+          if (coiotStateProperty != null) {
+            const observation: StateProperty = {
+              key: coiotStateProperty.statusKey,
+              value: coiotStateProperty.type(coiotValue),
             };
             subscriber.next(observation);
           }
@@ -39,12 +39,12 @@ function toObservation(map: Map<number, CoiotObservation>) {
   };
 }
 
-export class CoiotTracker {
-  deviceStatus$: Observable<Observation>;
+export class CoiotTracker implements Tracker {
+  deviceStatus$: Observable<StateProperty>;
   /** helper map that matches available coiote ids to status ids */
-  map = new Map<number, CoiotObservation>();
+  map = new Map<number, CoiotStateProperty>();
 
-  availableStatusInDevice: string []= []
+  availableStatusInDevice: string[] = [];
 
   constructor(protected device: ShellyDevice) {
     const pushProperties = device.getPushProperties();
@@ -66,20 +66,19 @@ export class CoiotTracker {
       // use the coiot payload, that comes with the device, to filter all device status to just this device ones
       switchMap((description) => status$.pipe(filter((status) => status.deviceId === description.deviceId))),
       // convert an object that is easier to compare
-      toObservation(this.map),
+      toStateProperty(this.map),
       share(),
     );
   }
 
-  track(key: string): Observable<Observation> {
+  track(key: string): Observable<StateProperty> {
     if (this.availableStatusInDevice.includes(key)) {
       debug(`Tracking ${key}`);
       return this.deviceStatus$.pipe(
         filter((observation) => observation.key === key),
         tap((obs) => debug(obs)),
       );
-    }
-    else {
+    } else {
       return EMPTY;
     }
   }

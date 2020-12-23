@@ -1,19 +1,23 @@
-import { ShellyDevice, ShellyStatus } from 'devices';
+import { StateProperty, StatePropertyValue } from './model';
 import { defer, EMPTY, from, merge, Observable, Subject } from 'rxjs';
-import { catchError, filter, map, share, switchMap, tap } from 'rxjs/operators';
-import Debug from 'debug';
+import { catchError, filter, finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { getInterval$ } from '../intervals';
+import { ShellyDevice } from './base';
+import Debug from 'debug';
 
 const debug = Debug('shelly:state');
 
-export type PropertyValue = number | string | boolean;
-export type FlattenObject = Record<string, PropertyValue>;
-export type Observation = { key: string; value: PropertyValue };
+type FlattenObject = Record<string, StatePropertyValue>;
 
-export class DeviceState<T extends ShellyStatus> {
-  private status$ = new Subject<T>();
-  private changes$ = new Subject<Observation>();
-  private diff$: Observable<Observation>;
+/**
+ * Holds the device state, providing methods to update it from trackers and
+ * a shared place to observe its properties
+ *
+ * TODO: Emit inmediatelly after observe with the current state
+ */
+export class DeviceState {
+  private changes$ = new Subject<StateProperty>();
+  private diff$: Observable<StateProperty>;
 
   constructor(protected device: ShellyDevice, cadency = 60000) {
     const initial$ = defer(() => from(device.getStatus()));
@@ -22,7 +26,7 @@ export class DeviceState<T extends ShellyStatus> {
       tap(() => debug('device status reconciliation')),
     );
 
-    const deviceStatus$ = merge(initial$, periodicStatus$, this.status$).pipe();
+    const deviceStatus$ = merge(initial$, periodicStatus$).pipe();
 
     this.diff$ = deviceStatus$.pipe(
       map((status) => flatten(status)),
@@ -31,20 +35,17 @@ export class DeviceState<T extends ShellyStatus> {
     );
   }
 
-  public setStatus(status: T): void {
-    this.status$.next(status);
-  }
-
-  public update(observation: Observation): void {
+  public update(observation: StateProperty): void {
     this.changes$.next(observation);
   }
 
-  public observe(propertyName: string): Observable<PropertyValue> {
+  public observe(propertyName: string): Observable<StatePropertyValue> {
     debug(`Observing ${propertyName} in device`);
     return this.diff$.pipe(
       tap((x) => debug(x)),
       filter((observation) => observation.key === propertyName),
       map((observation) => observation.value),
+      finalize(() => debug(`Stop observing ${propertyName} in device`)),
       share(),
     );
   }
@@ -74,8 +75,12 @@ function flatten<T extends Record<string, any>>(object: T, path: string | null =
   }, {} as T);
 }
 
-export function diff(seed: FlattenObject) {
-  return function (source: Observable<Observation>): Observable<Observation> {
+/**
+ * RxJS Operator that computes object differences between a seed initial value,
+ * and new properties as they arrive from the upper stream
+ */
+function diff(seed: FlattenObject) {
+  return function (source: Observable<StateProperty>): Observable<StateProperty> {
     return new Observable((subscriber) => {
       let state: FlattenObject | null = seed;
       const subscription = source.subscribe(({ key, value }) => {
