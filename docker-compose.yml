@@ -10,6 +10,13 @@ services:
       - .:/workspace:delegated
       - node_modules:/workspace/node_modules
 
+  mosquitto:
+    image: eclipse-mosquitto
+
+    expose:
+      - '1883'
+      - '9001'
+
 volumes:
   node_modules:
 
