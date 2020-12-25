@@ -19,7 +19,7 @@ import {
   ShellyLoginParameters,
   ShellyOTAAttributes,
   ShellyOTAParameters,
-  ShellyPushProperties,
+  ShellyTrackProperties,
   ShellySettingsAttributes,
   ShellySettingsParameters,
   ShellySTAAttributes,
@@ -58,8 +58,6 @@ export abstract class ShellyDevice {
     this.coiotClient = clientFactory.getCoIoTClient(this);
     this.tracker = clientFactory.getTracker(this);
     this.state = new DeviceState(this);
-
-    // clientFactory.getMqttClient(this).subscribe((client) => (this.mqttClient = client));
   }
 
   /**
@@ -264,7 +262,7 @@ export abstract class ShellyDevice {
     );
   }
 
-  getPushProperties(): ShellyPushProperties {
+  getTrackProperties(): ShellyTrackProperties {
     return {};
   }
 }

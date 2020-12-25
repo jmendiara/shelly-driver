@@ -2,13 +2,14 @@ import { ShellyModelIdentifier } from './common';
 import { StatePropertyValue } from './state';
 
 type Custom = (value: unknown) => StatePropertyValue;
-export type ShellyPushPropertyType = typeof Boolean | typeof Number | typeof String | Custom;
-export interface ShellyPushProperty {
-  coiot?: number;
-  mqtt?: string;
-  type: ShellyPushPropertyType;
+export type ShellyTrackPropertyType = typeof Boolean | typeof Number | typeof String | Custom;
+export type ShellyTrackCoiotProperty = [number, ShellyTrackPropertyType];
+export type ShellyTrackMqttProperty = [string, ShellyTrackPropertyType];
+export interface ShellyTrackProperty {
+  coiot?: ShellyTrackCoiotProperty;
+  mqtt?: ShellyTrackMqttProperty;
 }
-export type ShellyPushProperties = Partial<Record<ShellyStatusProperty, ShellyPushProperty>>;
+export type ShellyTrackProperties = Partial<Record<ShellyStatusProperty, ShellyTrackProperty>>;
 
 // TODO: Investigate how to generate this using typescript from the ShellyStatus interface
 export type ShellyStatusProperty =

@@ -1,5 +1,5 @@
 import { CoIoTServer, CoIoTStatus } from 'coiot-coap';
-import { ShellyDevice, ShellyPushPropertyType, StateProperty } from '../../devices';
+import { ShellyDevice, ShellyTrackPropertyType, StateProperty } from '../../devices';
 import { defer, EMPTY, from, fromEvent, Observable, using } from 'rxjs';
 import { filter, share, switchMap, tap } from 'rxjs/operators';
 import Debug from 'debug';
@@ -17,7 +17,7 @@ const status$ = using(
 
 interface CoiotStateProperty {
   statusKey: string;
-  type: ShellyPushPropertyType;
+  type: ShellyTrackPropertyType;
 }
 
 function toStateProperty(map: Map<number, CoiotStateProperty>) {
@@ -47,14 +47,14 @@ export class CoiotTracker implements Tracker {
   availableStatusInDevice: string[] = [];
 
   constructor(protected device: ShellyDevice) {
-    const pushProperties = device.getPushProperties();
+    const pushProperties = device.getTrackProperties();
 
     Object.entries(pushProperties).forEach(([statusKey, property]) => {
       if (property?.coiot != null) {
-        const coiotId = property.coiot;
+        const [coiotId, type]  = property.coiot;
         this.map.set(coiotId, {
           statusKey,
-          type: property.type,
+          type,
         });
         this.availableStatusInDevice.push(statusKey);
       }

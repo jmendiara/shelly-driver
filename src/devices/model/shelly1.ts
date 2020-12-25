@@ -1,12 +1,12 @@
 import {
-  ShellyPushProperty,
+  ShellyTrackProperty,
   ShellySettingsAttributes,
   ShellySettingsParameters,
   ShellyStatus,
   ShellyStatusProperty,
 } from './base';
 
-export type Shelly1PushProperties = Partial<Record<Shelly1StatusProperty, ShellyPushProperty>>;
+export type Shelly1TrackProperties = Partial<Record<Shelly1StatusProperty, ShellyTrackProperty>>;
 
 // TODO: research how this typing can be avoided and guess from Status interface
 export type Shelly1StatusProperty =

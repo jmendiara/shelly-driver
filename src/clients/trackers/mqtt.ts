@@ -1,4 +1,4 @@
-import { ShellyDevice, StateProperty, ShellySettingsAttributes, ShellyPushProperty } from '../../devices';
+import { ShellyDevice, StateProperty, ShellySettingsAttributes, ShellyTrackMqttProperty } from '../../devices';
 import { combineLatest, defer, EMPTY, from, iif, Observable } from 'rxjs';
 import { RxMqttClient } from 'oropel';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -16,15 +16,15 @@ export const getMqttClient = async (url: string): Promise<RxMqttClient> => cache
 export class MqttTracker implements Tracker {
   client$: Observable<RxMqttClient>;
   settings$: Observable<ShellySettingsAttributes>;
-  map = new Map<string, ShellyPushProperty>();
+  map = new Map<string, ShellyTrackMqttProperty>();
   availableStatusInDevice: string[] = [];
 
   constructor(protected device: ShellyDevice) {
-    const pushProperties = device.getPushProperties();
+    const pushProperties = device.getTrackProperties();
 
     Object.entries(pushProperties).forEach(([statusKey, property]) => {
       if (property?.mqtt != null) {
-        this.map.set(statusKey, property);
+        this.map.set(statusKey, property.mqtt);
         this.availableStatusInDevice.push(statusKey);
       }
     });
@@ -46,15 +46,15 @@ export class MqttTracker implements Tracker {
   track(key: string): Observable<StateProperty> {
     const property = this.map.get(key);
     if (property) {
+      const [topic, type] = property;
       debug(`Tracking ${key}`);
       return combineLatest([this.client$, this.settings$]).pipe(
-        switchMap(([client, settings]) => client.topic(`shellies/${settings.mqtt.id}/${property.mqtt}`)),
+        switchMap(([client, settings]) => client.topic(`shellies/${settings.mqtt.id}/${topic}`)),
 
         map<Buffer, StateProperty>((buffer) => {
-          debug(`Recibi '${buffer.toString()}'`);
           return {
             key,
-            value: property.type(buffer.toString()),
+            value: type(buffer.toString()),
           };
         }),
         tap((obs) => debug(obs)),
@@ -64,3 +64,37 @@ export class MqttTracker implements Tracker {
     }
   }
 }
+
+/**
+ * Set of function adaters to convert from MQTT data received on a
+ * topic to a well-known value expected by consumers
+ */
+export const MqttAdapters = {
+  Boolean: (buffer: Buffer): boolean => {
+    const input = buffer.toString();
+    if (input === 'on') {
+      return true;
+    } else if (input === 'off') {
+      return false;
+    } else {
+      throw new Error('Unknown value in Boolean adapter: ' + input);
+    }
+  },
+  Number: (buffer: Buffer): number => {
+    const input = buffer.toString();
+    const value = Number(input);
+    if (isNaN(value)) {
+      throw new Error('Unknown value in Number adapter: ' + input);
+    }
+    return value;
+  },
+  String: (buffer: Buffer): string => {
+    return buffer.toString();
+  },
+  JSON: <T>(path: string, adapter: (buffer: Buffer) => T) => (buffer: Buffer): T => {
+    const input = buffer.toString();
+    const json = JSON.parse(input);
+    // TODO: support nested paths
+    return adapter(Buffer.from(json[path]));
+  }
+};

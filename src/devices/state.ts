@@ -45,8 +45,8 @@ export class DeviceState {
       tap((x) => debug(x)),
       filter((observation) => observation.key === propertyName),
       map((observation) => observation.value),
-      finalize(() => debug(`Stop observing ${propertyName} in device`)),
       share(),
+      finalize(() => debug(`Stop observing ${propertyName} in device`)),
     );
   }
 }

@@ -1,36 +1,52 @@
 
-# node-typescript-boilerplate
+# shelly-driver
 
-👩🏻‍💻 Developer Ready: A comprehensive template. Works out of the box for most nodejs projects.
+> CURRENTLY UNDER ACTIVE DEVELOPMENT
 
-🏃🏽 Instant Value: All basic tools included and configured:
+Javascript driver to connect and manage shelly devices
 
-- TypeScript 4.2
-- eslint with some initial rules recommendation
-- jest for fast unit testing and code coverage
-- Type definitions for Node.js and Jest
-- prettier to enforce consistent code style
-- NPM scripts for common operations
-- Simple example of TypeScript code and unit test
-- .editorconfig for consistent file format
-- Example configuration for GitHub Actions
-
-🤲 Free as in speech: available under the APLv2 license.
+- [x] HTTP communication
+- [x] CoIoT/MQTT/HTTP status tracking
+- [ ] mDNS/CoIoT Device Discovery
 
 ## Getting Started
 
-This project is intended to be used with the latest Active LTS release of nodejs.
+```sh
+npm i shelly-driver
+```
 
-### Use as a repository template
+```ts
+// Direct device access
+import { Shelly1 } from 'shelly-driver';
 
-To start, just click the **Use template** link (or the green button). Now start adding your code in the `src` and unit tests in the `__tests__` directories.
+const fan = new Shelly1({
+  host: '192.168.31.130',
+});
+
+// lazy observation on any status property change via RxJS
+fan.observe('relays.0.ison')
+  .subscribe((isOn) => console.log('The device is turned', isOn ? 'on': 'off'));
+
+const settings = await fan.getSettings();
+
+```
+
+## Devices supported
+
+We are in the way of supporting all the Allterco devices. Please open an issue if you need more devices supported. This driver contains full feature self documented code, it's not hard to add them,
+but takes some of our free time.
+
+| Device | Implemented | Real life tested |
+| -------| ----------- | ---------------- |
+| Shelly1 | ✓ | ✓ |
+
 
 ## Development setup
 
 To clone the repository use the following commands:
 
 ```sh
-git clone https://github.com/jmendiara/node-typescript-boilerplate && cd node-typescript-boilerplate
+git clone https://github.com/jmendiara/shelly-driver && cd shelly-driver
 ```
 
 Use [VSCode development containers](https://code.visualstudio.com/docs/remote/containers),  directly [docker-compose](https://docs.docker.com/compose/)
