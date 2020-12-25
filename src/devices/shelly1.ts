@@ -7,11 +7,26 @@ import {
   Shelly1SettingsAttributtes,
   Shelly1Status,
   Shelly1StatusProperty,
+  Shelly1RelayAttributes,
+  Shelly1RelayParameters,
 } from './model';
 
 import { MqttAdapters } from '../clients/trackers';
+import qs from 'qs';
 
 export class Shelly1 extends ShellyDevice {
+  /** Shows current status of the output channel */
+  async getRelay0(context?: Context): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.get<Shelly1RelayAttributes>('/relay/0', context);
+    return data;
+  }
+
+  /** Accepts commands for controlling the channel. */
+  async setRelay0(params: Partial<Shelly1RelayParameters>, context?: Context): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.post<Shelly1RelayAttributes>('/relay/0', qs.stringify(params), context);
+    return data;
+  }
+
   getTrackProperties(): Shelly1TrackProperties {
     // TODO: Find a meaning and a way to manage CoIoT "I":9103,
     return {

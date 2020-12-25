@@ -262,6 +262,7 @@ export abstract class ShellyDevice {
     );
   }
 
+  /** Gets the supported track properties that can be managed by coiot / mqtt trackers */
   getTrackProperties(): ShellyTrackProperties {
     return {};
   }

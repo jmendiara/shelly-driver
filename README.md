@@ -27,7 +27,7 @@ const fan = new Shelly1({
 fan.observe('relays.0.ison')
   .subscribe((isOn) => console.log('The device is turned', isOn ? 'on': 'off'));
 
-const settings = await fan.getSettings();
+const settings = await fan.setRelay0({ turn: 'on' });
 
 ```
 
@@ -38,8 +38,10 @@ but takes some of our free time.
 
 | Device | Implemented | Real life tested |
 | -------| ----------- | ---------------- |
-| Shelly1 | ✓ | ✓ |
-
+| Shelly1 | … | ✔️ |
+| Shelly1PM | … | ✔️ |
+| Button | ❌ | ✔️ |
+| DoorWindow1 | ❌ | ✔️ |
 
 ## Development setup
 

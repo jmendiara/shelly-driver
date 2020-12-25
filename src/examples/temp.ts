@@ -35,6 +35,10 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   );
 
   await delay(5000);
+  await ventilador.setRelay0({ turn: 'on' });
+  await delay(5000);
+  await ventilador.setRelay0({ turn: 'off' });
+
   //sub.unsubscribe();
 
   // const otro = ventilador.observe('relays.0.ison');
