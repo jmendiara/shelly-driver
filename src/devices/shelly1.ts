@@ -9,6 +9,13 @@ import {
   Shelly1StatusProperty,
   Shelly1RelayAttributes,
   Shelly1RelayParameters,
+  Shelly1SettingsParameters,
+  Shelly1SettingsRelayAttributes,
+  Shelly1SettingsRelayParameters,
+  Shelly1PowerParameters,
+  Shelly1ExternalTemperatureParameters,
+  Shelly1ExternalHumidityParameters,
+  Shelly1ExternalSwitchParameters,
 } from './model';
 
 import { MqttAdapters } from '../clients/trackers';
@@ -16,14 +23,82 @@ import qs from 'qs';
 
 export class Shelly1 extends ShellyDevice {
   /** Shows current status of the output channel */
-  async getRelay0(context?: Context): Promise<Shelly1RelayAttributes> {
-    const { data } = await this.httpClient.get<Shelly1RelayAttributes>('/relay/0', context);
+  async getRelay(context?: Context): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.get<Shelly1RelayAttributes>(`/relay/0`, context);
     return data;
   }
 
   /** Accepts commands for controlling the channel. */
-  async setRelay0(params: Partial<Shelly1RelayParameters>, context?: Context): Promise<Shelly1RelayAttributes> {
-    const { data } = await this.httpClient.post<Shelly1RelayAttributes>('/relay/0', qs.stringify(params), context);
+  async setRelay(params: Partial<Shelly1RelayParameters>, context?: Context): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.post<Shelly1RelayAttributes>(`/relay/0`, qs.stringify(params), context);
+    return data;
+  }
+
+  /**
+   * The returned document here is identical to the data returned in getSettings
+   * for the single output channel in the relays array.
+   * The channel index exists to preserve API compatibility with multi-channel Shelly devices.
+   */
+  async getRelaySettings(context?: Context): Promise<Shelly1SettingsRelayAttributes> {
+    const { data } = await this.httpClient.get<Shelly1SettingsRelayAttributes>(`/settings/relay/0`, context);
+    return data;
+  }
+
+  async setRelaySettings(
+    params: Partial<Shelly1SettingsRelayParameters>,
+    context?: Context,
+  ): Promise<Shelly1SettingsRelayAttributes> {
+    const { data } = await this.httpClient.post<Shelly1SettingsRelayAttributes>(
+      `/settings/relay/0`,
+      qs.stringify(params),
+      context,
+    );
+    return data;
+  }
+
+  async setPowerSettings(params: Partial<Shelly1PowerParameters>, context?: Context): Promise<Shelly1PowerParameters> {
+    const { data } = await this.httpClient.post<Shelly1PowerParameters>(
+      `/settings/power/0`,
+      qs.stringify(params),
+      context,
+    );
+    return data;
+  }
+
+  async setExternalTemperatureSettings(
+    index: 0 | 1 | 2,
+    params: Partial<Shelly1ExternalTemperatureParameters>,
+    context?: Context,
+  ): Promise<Shelly1ExternalTemperatureParameters> {
+    const { data } = await this.httpClient.post<Shelly1ExternalTemperatureParameters>(
+      `/settings/ext_temperature/${index}`,
+      qs.stringify(params),
+      context,
+    );
+    return data;
+  }
+
+  async setExternalHumiditySettings(
+    params: Partial<Shelly1ExternalHumidityParameters>,
+    context?: Context,
+  ): Promise<Shelly1ExternalHumidityParameters> {
+    const { data } = await this.httpClient.post<Shelly1ExternalHumidityParameters>(
+      `/settings/ext_humidity/0`,
+      qs.stringify(params),
+      context,
+    );
+    return data;
+  }
+
+  async setExternalSwitchSettings(
+    params: Partial<Shelly1ExternalSwitchParameters>,
+    context?: Context,
+  ): Promise<Shelly1ExternalSwitchParameters> {
+    const { data } = await this.httpClient.post<Shelly1ExternalSwitchParameters>(
+      `/settings/ext_switch/0`,
+      qs.stringify(params),
+      context,
+    );
     return data;
   }
 
@@ -87,7 +162,7 @@ export class Shelly1 extends ShellyDevice {
 
 export interface Shelly1 extends ShellyDevice {
   getSettings(context?: Context): Promise<Shelly1SettingsAttributtes>;
+  setSettings(params: Partial<Shelly1SettingsParameters>, context?: Context): Promise<Shelly1SettingsAttributtes>;
   getStatus(context?: Context): Promise<Shelly1Status>;
-  // TODO: research how this typing can be avoided and guess from Status interface directly
   observe(path: Shelly1StatusProperty, context?: Context): Observable<StatePropertyValue>;
 }

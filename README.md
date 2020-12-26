@@ -27,7 +27,7 @@ const fan = new Shelly1({
 fan.observe('relays.0.ison')
   .subscribe((isOn) => console.log('The device is turned', isOn ? 'on': 'off'));
 
-const settings = await fan.setRelay0({ turn: 'on' });
+const settings = await fan.setRelay({ turn: 'on' });
 
 ```
 
@@ -36,12 +36,12 @@ const settings = await fan.setRelay0({ turn: 'on' });
 We are in the way of supporting all the Allterco devices. Please open an issue if you need more devices supported. This driver contains full feature self documented code, it's not hard to add them,
 but takes some of our free time.
 
-| Device | Implemented | Real life tested |
-| -------| ----------- | ---------------- |
-| Shelly1 | … | ✔️ |
-| Shelly1PM | … | ✔️ |
-| Button | ❌ | ✔️ |
-| DoorWindow1 | ❌ | ✔️ |
+| Device                               | Available | Real life tested |
+| ------------------------------------ | --------- | ---------------- |
+| Shelly1                              | ✅         | ✅               |
+| Shelly1PM                            | ✅         | ❌               |
+| Shelly1 with DS1820/DHT22 add-on     | ✅         | ❌               |
+| Shelly1 with low-power switch add-on | ✅         | ❌               |
 
 ## Development setup
 

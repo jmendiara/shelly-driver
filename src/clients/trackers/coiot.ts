@@ -51,7 +51,7 @@ export class CoiotTracker implements Tracker {
 
     Object.entries(pushProperties).forEach(([statusKey, property]) => {
       if (property?.coiot != null) {
-        const [coiotId, type]  = property.coiot;
+        const [coiotId, type] = property.coiot;
         this.map.set(coiotId, {
           statusKey,
           type,

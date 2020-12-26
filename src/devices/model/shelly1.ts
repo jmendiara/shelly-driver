@@ -16,7 +16,6 @@ export type Shelly1StatusProperty =
   | 'relays.0.timer_started'
   | 'relays.0.timer_duration'
   | 'relays.0.timer_remaining'
-  | 'relays.0.overpower'
   | 'relays.0.source'
   | 'meters.0.power'
   | 'meters.0.is_valid'
@@ -64,19 +63,19 @@ export interface Shelly1SettingsAttributtes extends ShellySettingsAttributes {
    * If add-on attached (DS1820/DHT22):
    * External temperature thresholds and actions, see /settings/ext_temperature/{index}
    */
-  ext_temperature: Record<0 | 1 | 2, Shelly1ExternalTemperatureAttributes>;
+  ext_temperature: Record<0 | 1 | 2, Shelly1ExternalTemperatureParameters>;
 
   /**
    * If add-on attached (DHT22 only):
    * External humidity thresholds and actions, see /settings/ext_humidity/0
    */
-  ext_humidity: Record<0, Shelly1ExternalHumidityAttributes>;
+  ext_humidity: Record<0, Shelly1ExternalHumidityParameters>;
 
   /**
    * If low-power switch add-on attached:
    * Information about the status of the external switch
    */
-  ext_switch: Record<0, Shelly1ExternalSwitchAttributes>;
+  ext_switch: Record<0, Shelly1ExternalSwitchParameters>;
 }
 
 export interface Shelly1SettingsParameters extends ShellySettingsParameters {
@@ -161,23 +160,24 @@ export interface Shelly1SettingsRelayParameters {
   /** Shelly1 only Set user power constant to display in meters when relay is on, see /settings/power/0 */
   power: number;
 
-  /** Set URL to access when SW input is activated */
-  btn_on_url: string;
+  // XXX: the following properties are not documented and can be accesed in /actions endpoints
+  // /** Set URL to access when SW input is activated */
+  // btn_on_url: string;
 
-  /**	Set URL to access when SW input is deactivated */
-  btn_off_url: string;
+  // /**	Set URL to access when SW input is deactivated */
+  // btn_off_url: string;
 
-  /**	Set URL to access when output is activated */
-  out_on_url: string;
+  // /**	Set URL to access when output is activated */
+  // out_on_url: string;
 
-  /**	Set URL to access when output is deactivated */
-  out_off_url: string;
+  // /**	Set URL to access when output is deactivated */
+  // out_off_url: string;
 
-  /**	Set URL to access on longpush. Works only when button is configured as momentary, momentary_on_release or detached. */
-  longpush_url: string;
+  // /**	Set URL to access on longpush. Works only when button is configured as momentary, momentary_on_release or detached. */
+  // longpush_url: string;
 
-  /** Set URL to access on shortpush. Works only when button is configured as momentary, momentary_on_release or detached. */
-  shortpush_url: string;
+  // /** Set URL to access on shortpush. Works only when button is configured as momentary, momentary_on_release or detached. */
+  // shortpush_url: string;
 
   /** Enable schedule timer */
   schedule: boolean;
@@ -199,7 +199,7 @@ export interface Shelly1PowerParameters {
  * DS1820: [-55 / 125 ]°C, [-67 / 257]°F
  * DHT22: [-40 / 80]°C, [-40 / 176]°F
  */
-export interface Shelly1ExternalTemperatureAttributes {
+export interface Shelly1ExternalTemperatureParameters {
   /**	Temperature (in °C) over which to trigger overtemp_act */
   overtemp_threshold_tC: number;
 
@@ -213,16 +213,24 @@ export interface Shelly1ExternalTemperatureAttributes {
   undertemp_threshold_tF: number;
 
   /**	Over-temperature action, one of disabled, relay_on, relay_off */
-  overtemp_act: 'disabled' | 'relay_on' | 'relay_of';
+  overtemp_act: 'disabled' | 'relay_on' | 'relay_off';
 
   /**	Under - temperature action, one of disabled, relay_on, relay_off */
-  undertemp_act: 'disabled' | 'relay_on' | 'relay_of';
+  undertemp_act: 'disabled' | 'relay_on' | 'relay_off';
+
+  /** Set temperature offset, in °C */
+  offset_tC: number;
+
+  /** Set temperature offset, in °F */
+  offset_tF: number;
 }
 
 /**
  * Only applicable if add-on attached (DHT22)
+ * Humidity thresholds: The values of over-/under-humidity thresholds must
+ * be inside the range measurable by the DHT22 sensor: [0/100]%
  */
-export interface Shelly1ExternalHumidityAttributes {
+export interface Shelly1ExternalHumidityParameters {
   /**	Humidity (in %) over which to trigger overhum_act */
   overhum_threshold: number;
 
@@ -230,18 +238,21 @@ export interface Shelly1ExternalHumidityAttributes {
   underhum_threshold: number;
 
   /**	Over-humidity action, one of disabled, relay_on, relay_off */
-  overhum_act: 'disabled' | 'relay_on' | 'relay_of';
+  overhum_act: 'disabled' | 'relay_on' | 'relay_off';
 
   /**	Under-humidity action, one of disabled, relay_on, relay_off */
-  underhum_act: 'disabled' | 'relay_on' | 'relay_of';
+  underhum_act: 'disabled' | 'relay_on' | 'relay_off';
+
+  /** Set humidity offset, in % */
+  offset: number;
 }
 
 /**
  * Only applicable if low-power switch add-on attached
  */
-export interface Shelly1ExternalSwitchAttributes {
-  /** State of the external switch */
-  input: number;
+export interface Shelly1ExternalSwitchParameters {
+  /**	Relay number, which is controlled by the external switch. -1 if no relay is controlled by the ext switch. */
+  relay_num: number;
 }
 
 export interface Shelly1Status<T = Shelly1StatusMeters> extends ShellyStatus {

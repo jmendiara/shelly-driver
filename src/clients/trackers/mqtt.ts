@@ -72,9 +72,9 @@ export class MqttTracker implements Tracker {
 export const MqttAdapters = {
   Boolean: (buffer: Buffer): boolean => {
     const input = buffer.toString();
-    if (input === 'on') {
+    if (input === 'on' || input === '1') {
       return true;
-    } else if (input === 'off') {
+    } else if (input === 'off' || input === '0' || input === 'overpower') {
       return false;
     } else {
       throw new Error('Unknown value in Boolean adapter: ' + input);
@@ -96,5 +96,10 @@ export const MqttAdapters = {
     const json = JSON.parse(input);
     // TODO: support nested paths
     return adapter(Buffer.from(json[path]));
-  }
+  },
+  /** to check an specific value and convert to a boolean */
+  BooleanValue: (val: string) => (buffer: Buffer): boolean => {
+    const input = buffer.toString();
+    return input === val;
+  },
 };

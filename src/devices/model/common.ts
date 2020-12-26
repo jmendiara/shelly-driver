@@ -1,11 +1,7 @@
 /**
  * All the Shelly Models
- * TODO: move to algebraic type
  */
-export enum ShellyModelIdentifier {
-  Shelly1 = 'SHSW-1',
-  Shelly25 = 'SHSW-25',
-}
+export type ShellyModelIdentifier = 'SHSW-1' | 'SHSW-PM';
 
 /** Allows specifying custom per-request information to be sent to the device via the httpClient */
 export interface Context {
