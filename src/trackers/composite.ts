@@ -1,6 +1,6 @@
 import { Observable, merge } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { ShellyDevice, StateProperty } from '../../devices';
+import { ShellyDevice, StateProperty } from '../devices';
 import { CoiotTracker } from './coiot';
 import { HttpTracker } from './http';
 import { Tracker } from './model';

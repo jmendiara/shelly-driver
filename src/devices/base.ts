@@ -4,7 +4,7 @@ import qs from 'qs';
 import { Observable } from 'rxjs';
 import { CoIoTClient, CoIoTDescription, CoIoTStatus } from 'coiot-coap';
 import { DeviceState } from './state';
-import { finalize, map, share, shareReplay, switchMapTo, tap } from 'rxjs/operators';
+import { finalize, map, switchMapTo, tap } from 'rxjs/operators';
 import {
   Context,
   StatePropertyValue,
@@ -29,7 +29,7 @@ import {
   ShellyWiFiScanAttributes,
   ShellyModelIdentifier,
 } from './model';
-import { Tracker } from 'clients/trackers';
+import { Tracker } from '../trackers';
 import { deviceMap } from './registry';
 
 export interface ShellyDeviceOptions {

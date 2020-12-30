@@ -1,5 +1,5 @@
 import { CoIoTServer, CoIoTStatus } from 'coiot-coap';
-import { ShellyDevice, ShellyTrackPropertyType, StateProperty } from '../../devices';
+import { ShellyDevice, ShellyTrackPropertyType, StateProperty } from '../devices';
 import { defer, EMPTY, from, fromEvent, Observable, using } from 'rxjs';
 import { catchError, filter, finalize, retry, share, switchMap, tap } from 'rxjs/operators';
 import { Tracker } from './model';

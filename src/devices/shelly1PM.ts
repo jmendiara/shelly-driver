@@ -11,7 +11,7 @@ import {
   ShellyModelIdentifier,
   StatePropertyValue,
 } from './model';
-import { MqttAdapters } from '../clients/trackers';
+import { MqttAdapters } from '../trackers';
 import { Shelly1 } from './shelly1';
 import { deviceMap } from './registry';
 

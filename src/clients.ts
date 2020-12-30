@@ -1,5 +1,5 @@
 import { CoIoTClient } from 'coiot-coap';
-import { ShellyDevice } from '../devices';
+import { ShellyDevice } from './devices';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { CompositeTracker, Tracker } from './trackers';
 import { addLogger } from 'axios-debug-log';

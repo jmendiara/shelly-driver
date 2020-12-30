@@ -1,19 +1,6 @@
 import { StateProperty, StatePropertyValue } from './model';
-import { defer, EMPTY, from, merge, NEVER, Observable, ReplaySubject, Subject } from 'rxjs';
-import {
-  catchError,
-  filter,
-  finalize,
-  map,
-  mergeMap,
-  retry,
-  share,
-  shareReplay,
-  switchMap,
-  switchMapTo,
-  tap,
-} from 'rxjs/operators';
-import { getInterval$ } from '../intervals';
+import { defer, EMPTY, merge, Observable, ReplaySubject } from 'rxjs';
+import { catchError, filter, finalize, map, retry, share, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { ShellyDevice } from './base';
 import Debug from 'debug';
 
@@ -31,7 +18,7 @@ export class DeviceState {
   public changes$ = new ReplaySubject<StateProperty>(1);
   private diff$: Observable<StateProperty>;
 
-  constructor(protected device: ShellyDevice, cadency = 1000) {
+  constructor(protected device: ShellyDevice) {
     const initial$ = defer(() => device.getStatus()).pipe(
       retry(2),
       catchError((err: Error) => {
@@ -98,20 +85,6 @@ function diff(seed: FlattenObject) {
       };
     });
   };
-}
-
-function debugO<T>(tag: string, next = true, error = true, complete = true) {
-  return tap<T>({
-    next(value) {
-      next && console.log(`[${tag}: Next]`, value);
-    },
-    error(err) {
-      error && console.log(`[${tag}: Error]`, err);
-    },
-    complete() {
-      complete && console.log(`[${tag}]: Complete`);
-    },
-  });
 }
 
 /**

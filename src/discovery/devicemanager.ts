@@ -1,6 +1,6 @@
 import { Observable, ReplaySubject } from 'rxjs';
-import { ShellyDevice } from './devices';
-import { deviceMap } from './devices/registry';
+import { ShellyDevice } from '../devices';
+import { deviceMap } from '../devices/registry';
 import Bonjour, { Browser, RemoteService } from 'bonjour';
 import { switchMapTo } from 'rxjs/operators';
 
@@ -8,7 +8,7 @@ import Debug from 'debug';
 const debug = Debug('shelly:discovery');
 const bonjour = Bonjour();
 
-class DeviceManager {
+export class DeviceManager {
   devices$ = new ReplaySubject<ShellyDevice>();
   httpBrowser: Browser;
 
@@ -47,5 +47,3 @@ class DeviceManager {
     }).pipe(switchMapTo(this.devices$));
   }
 }
-
-export default new DeviceManager();

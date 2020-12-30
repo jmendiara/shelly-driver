@@ -1,7 +1,7 @@
-import { from, EMPTY, Observable, defer } from 'rxjs';
-import { catchError, filter, finalize, map, pluck, retry, share, switchMap, switchMapTo, tap } from 'rxjs/operators';
-import { ShellyDevice, ShellyStatus, StatePropertyValue, StateProperty } from '../../devices';
-import { getInterval$ } from '../../intervals';
+import { EMPTY, Observable, defer } from 'rxjs';
+import { catchError, filter, finalize, map, pluck, retry, share, switchMapTo, tap } from 'rxjs/operators';
+import { ShellyDevice, ShellyStatus, StatePropertyValue, StateProperty } from '../devices';
+import { getInterval$ } from '../intervals';
 import Debug from 'debug';
 import { Tracker } from './model';
 

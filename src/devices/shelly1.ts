@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ShellyDevice, ShellyDeviceOptions } from './base';
+import { ShellyDevice } from './base';
 import {
   Context,
   StatePropertyValue,
@@ -19,7 +19,7 @@ import {
   ShellyModelIdentifier,
 } from './model';
 
-import { MqttAdapters } from '../clients/trackers';
+import { MqttAdapters } from '../trackers';
 import qs from 'qs';
 import { deviceMap } from './registry';
 

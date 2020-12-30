@@ -1,4 +1,4 @@
-import { ShellyDevice, StateProperty, ShellySettingsAttributes, ShellyTrackMqttProperty } from '../../devices';
+import { ShellyDevice, StateProperty, ShellySettingsAttributes, ShellyTrackMqttProperty } from '../devices';
 import { combineLatest, defer, EMPTY, from, iif, Observable } from 'rxjs';
 import { RxMqttClient } from 'oropel';
 import { catchError, finalize, map, retry, share, switchMap, tap } from 'rxjs/operators';

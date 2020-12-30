@@ -7,7 +7,7 @@ Javascript driver to connect and manage shelly devices
 
 - [x] HTTP communication
 - [x] CoIoT/MQTT/HTTP status tracking
-- [ ] mDNS/CoIoT Device Discovery
+- [x] mDNS Device Discovery
 
 ## Getting Started
 
@@ -28,7 +28,6 @@ fan.observe('relays.0.ison')
   .subscribe((isOn) => console.log('The device is turned', isOn ? 'on': 'off'));
 
 const settings = await fan.setRelay({ turn: 'on' });
-
 ```
 
 ## Devices supported
