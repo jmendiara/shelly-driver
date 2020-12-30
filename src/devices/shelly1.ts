@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ShellyDevice } from './base';
+import { ShellyDevice, ShellyDeviceOptions } from './base';
 import {
   Context,
   StatePropertyValue,
@@ -16,12 +16,16 @@ import {
   Shelly1ExternalTemperatureParameters,
   Shelly1ExternalHumidityParameters,
   Shelly1ExternalSwitchParameters,
+  ShellyModelIdentifier,
 } from './model';
 
 import { MqttAdapters } from '../clients/trackers';
 import qs from 'qs';
+import { deviceMap } from './registry';
 
 export class Shelly1 extends ShellyDevice {
+  public type: ShellyModelIdentifier = 'SHSW-1';
+
   /** Shows current status of the output channel */
   async getRelay(context?: Context): Promise<Shelly1RelayAttributes> {
     const { data } = await this.httpClient.get<Shelly1RelayAttributes>(`/relay/0`, context);
@@ -103,7 +107,7 @@ export class Shelly1 extends ShellyDevice {
   }
 
   getTrackProperties(): Shelly1TrackProperties {
-    // TODO: Find a meaning and a way to manage CoIoT "I":9103,
+    // TODO: support longpush state (mqtt only)
     return {
       ...super.getTrackProperties(),
       'relays.0.ison': {
@@ -166,3 +170,5 @@ export interface Shelly1 extends ShellyDevice {
   getStatus(context?: Context): Promise<Shelly1Status>;
   observe(path: Shelly1StatusProperty, context?: Context): Observable<StatePropertyValue>;
 }
+
+deviceMap.set('SHSW-1', Shelly1);

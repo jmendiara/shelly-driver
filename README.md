@@ -42,6 +42,8 @@ but takes some of our free time.
 | Shelly1PM                            | ✅         | ❌               |
 | Shelly1 with DS1820/DHT22 add-on     | ✅         | ❌               |
 | Shelly1 with low-power switch add-on | ✅         | ❌               |
+| Shelly Door Window 1                 | …          | ✅               |
+| Shelly Button 1                      | …          | ✅               |
 
 ## Development setup
 
@@ -67,6 +69,14 @@ docker-compose run app bash
 - `test` - run tests,
 - `test:watch` - interactive watch mode to automatically re-run tests
 - `format` - format the code
+
+
+### Debug
+
+Relevant event log for the driver are available using [debug](https://github.com/visionmedia/debug) module.
+```
+DEBUG=shelly:* ./your-app-binary
+```
 
 ## License
 

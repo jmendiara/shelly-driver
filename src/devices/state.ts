@@ -1,6 +1,18 @@
 import { StateProperty, StatePropertyValue } from './model';
-import { defer, EMPTY, from, merge, Observable, Subject } from 'rxjs';
-import { catchError, filter, finalize, map, share, switchMap, tap } from 'rxjs/operators';
+import { defer, EMPTY, from, merge, NEVER, Observable, ReplaySubject, Subject } from 'rxjs';
+import {
+  catchError,
+  filter,
+  finalize,
+  map,
+  mergeMap,
+  retry,
+  share,
+  shareReplay,
+  switchMap,
+  switchMapTo,
+  tap,
+} from 'rxjs/operators';
 import { getInterval$ } from '../intervals';
 import { ShellyDevice } from './base';
 import Debug from 'debug';
@@ -16,39 +28,90 @@ type FlattenObject = Record<string, StatePropertyValue>;
  * TODO: Emit inmediatelly after observe with the current state
  */
 export class DeviceState {
-  private changes$ = new Subject<StateProperty>();
+  public changes$ = new ReplaySubject<StateProperty>(1);
   private diff$: Observable<StateProperty>;
 
-  constructor(protected device: ShellyDevice, cadency = 60000) {
-    const initial$ = defer(() => from(device.getStatus()));
-    const periodicStatus$ = getInterval$(cadency).pipe(
-      switchMap(() => from(device.getStatus()).pipe(catchError(() => EMPTY))),
-      tap(() => debug('device status reconciliation')),
+  constructor(protected device: ShellyDevice, cadency = 1000) {
+    const initial$ = defer(() => device.getStatus()).pipe(
+      retry(2),
+      catchError((err: Error) => {
+        debug(`[${this.device.host}] failed to get http status: ${err.message}`);
+        return EMPTY;
+      }),
+      share(),
+    );
+    //const deviceStatus$ = merge(initial$).pipe();
+    const deviceStatus$ = merge(initial$).pipe(
+      map((status) => flatten(status)),
+      shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    const deviceStatus$ = merge(initial$, periodicStatus$).pipe();
-
     this.diff$ = deviceStatus$.pipe(
-      map((status) => flatten(status)),
       switchMap((seed) => this.changes$.pipe(diff(seed))),
-      share(),
+      shareReplay({ refCount: true, bufferSize: 1 }),
     );
   }
 
-  public update(observation: StateProperty): void {
-    this.changes$.next(observation);
+  public update(prop: StateProperty): void {
+    this.changes$.next(prop);
   }
 
   public observe(propertyName: string): Observable<StatePropertyValue> {
-    debug(`Observing ${propertyName} in device`);
+    debug(`[${this.device.host}]`, `Observing ${propertyName}`);
     return this.diff$.pipe(
-      tap((x) => debug(x)),
+      tap((x) => debug(`[${this.device.host}]`, x)),
       filter((observation) => observation.key === propertyName),
       map((observation) => observation.value),
-      share(),
-      finalize(() => debug(`Stop observing ${propertyName} in device`)),
+      finalize(() => debug(`[${this.device.host}]`, `Stop observing ${propertyName}`)),
     );
   }
+}
+
+/**
+ * RxJS Operator that computes object differences between a seed initial value,
+ * and new properties as they arrive from the upper stream
+ */
+function diff(seed: FlattenObject) {
+  return function (source: Observable<StateProperty>): Observable<StateProperty> {
+    return new Observable<StateProperty>((subscriber) => {
+      let state: FlattenObject | null = seed;
+      const subscription = source.subscribe({
+        next({ key, value }) {
+          state = state ?? {};
+          if (state[key] !== value) {
+            state[key] = value;
+            subscriber.next({ key, value });
+          }
+        },
+        // error(err) {
+        //   console.error('Se ERROR el inner')
+        //   subscriber.error(err);
+        // },
+        // complete() {
+        //   console.log('Se completo el inner')
+        //   subscriber.complete();
+        // },
+      });
+      return () => {
+        state = null;
+        subscription.unsubscribe();
+      };
+    });
+  };
+}
+
+function debugO<T>(tag: string, next = true, error = true, complete = true) {
+  return tap<T>({
+    next(value) {
+      next && console.log(`[${tag}: Next]`, value);
+    },
+    error(err) {
+      error && console.log(`[${tag}: Error]`, err);
+    },
+    complete() {
+      complete && console.log(`[${tag}]: Complete`);
+    },
+  });
 }
 
 /**
@@ -73,27 +136,4 @@ function flatten<T extends Record<string, any>>(object: T, path: string | null =
 
     return isObject ? { ...acc, ...flatten(value, newPath, separator) } : { ...acc, [newPath]: value };
   }, {} as T);
-}
-
-/**
- * RxJS Operator that computes object differences between a seed initial value,
- * and new properties as they arrive from the upper stream
- */
-function diff(seed: FlattenObject) {
-  return function (source: Observable<StateProperty>): Observable<StateProperty> {
-    return new Observable((subscriber) => {
-      let state: FlattenObject | null = seed;
-      const subscription = source.subscribe(({ key, value }) => {
-        state = state ?? {};
-        if (state[key] !== value) {
-          state[key] = value;
-          subscriber.next({ key, value });
-        }
-      });
-      return () => {
-        state = null;
-        subscription.unsubscribe();
-      };
-    });
-  };
 }

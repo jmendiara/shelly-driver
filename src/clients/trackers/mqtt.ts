@@ -1,7 +1,7 @@
 import { ShellyDevice, StateProperty, ShellySettingsAttributes, ShellyTrackMqttProperty } from '../../devices';
 import { combineLatest, defer, EMPTY, from, iif, Observable } from 'rxjs';
 import { RxMqttClient } from 'oropel';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, map, retry, share, switchMap, tap } from 'rxjs/operators';
 import { Cache } from 'lru-pcache';
 import Debug from 'debug';
 import { Tracker } from './model';
@@ -28,26 +28,37 @@ export class MqttTracker implements Tracker {
         this.availableStatusInDevice.push(statusKey);
       }
     });
-    this.settings$ = defer(() => device.getSettings());
-
-    this.client$ = this.settings$.pipe(
-      switchMap((settings) => iif(() => settings.mqtt.enable, from(getMqttClient(`mqtt://${settings.mqtt.server}`)))),
+    //
+    this.settings$ = defer(() => device.getSettings()).pipe(
+      retry(2),
+      catchError((err: Error) => {
+        debug(`[${this.device.host}] failed to get device settings: ${err.message}`);
+        return EMPTY;
+      }),
+      share(),
     );
-
-    // const deviceStatus$: Observable<ComparableObject> = initial$.pipe(
-    //   // use the coiot payload, that comes with the device, to filter all device status to just this device ones
-    //   switchMap((description) => status$.pipe(filter((status) => status.deviceId === description.deviceId))),
-    //   // convert an object that is easier to compare
-    //   toComparableObject(),
-    //   share(),
-    // );
+    this.client$ = this.settings$.pipe(
+      switchMap((settings) =>
+        iif(
+          () => {
+            const isEnabled = settings.mqtt.enable;
+            if (!isEnabled) {
+              debug(`[${this.device.host}] mqtt not enabled`);
+            }
+            return isEnabled;
+          },
+          from(getMqttClient(`mqtt://${settings.mqtt.server}`)),
+          EMPTY,
+        ),
+      ),
+    );
   }
 
   track(key: string): Observable<StateProperty> {
     const property = this.map.get(key);
     if (property) {
       const [topic, type] = property;
-      debug(`Tracking ${key}`);
+      debug(`[${this.device.host}]`, `Tracking ${key}`);
       return combineLatest([this.client$, this.settings$]).pipe(
         switchMap(([client, settings]) => client.topic(`shellies/${settings.mqtt.id}/${topic}`)),
 
@@ -57,7 +68,12 @@ export class MqttTracker implements Tracker {
             value: type(buffer.toString()),
           };
         }),
-        tap((obs) => debug(obs)),
+        tap((obs) => debug(`[${this.device.host}]`, obs)),
+        catchError((err: Error) => {
+          debug(`[${this.device.host}] Tracking Error: ${err.message}`);
+          return EMPTY;
+        }),
+        finalize(() => debug(`[${this.device.host}] Stop tracking ${key}`)),
       );
     } else {
       return EMPTY;

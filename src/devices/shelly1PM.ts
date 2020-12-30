@@ -8,12 +8,16 @@ import {
   Shelly1PMStatus,
   Shelly1PMStatusProperty,
   Shelly1PMTrackProperties,
+  ShellyModelIdentifier,
   StatePropertyValue,
 } from './model';
 import { MqttAdapters } from '../clients/trackers';
 import { Shelly1 } from './shelly1';
+import { deviceMap } from './registry';
 
 export class Shelly1PM extends Shelly1 {
+  public type: ShellyModelIdentifier = 'SHSW-PM';
+
   getTrackProperties(): Shelly1PMTrackProperties {
     return {
       ...super.getTrackProperties(),
@@ -61,3 +65,5 @@ export interface Shelly1PM extends Shelly1 {
   setRelay(params: Partial<Shelly1PMRelayParameters>, context?: Context): Promise<Shelly1PMRelayAttributes>;
   observe(path: Shelly1PMStatusProperty, context?: Context): Observable<StatePropertyValue>;
 }
+
+deviceMap.set('SHSW-1', Shelly1);
