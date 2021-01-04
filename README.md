@@ -3,11 +3,12 @@
 
 > CURRENTLY UNDER ACTIVE DEVELOPMENT
 
-Javascript driver to connect and manage shelly devices
+nodejs driver to connect and manage shelly devices
 
 - [x] HTTP communication
-- [x] CoIoT/MQTT/HTTP status tracking
+- [x] CoIoT/MQTT/HTTP status tracking for _any_ property
 - [x] mDNS Device Discovery
+- [x] Full Typescript definitions
 
 ## Getting Started
 
@@ -19,9 +20,7 @@ npm i shelly-driver
 // Direct device access
 import { Shelly1 } from 'shelly-driver';
 
-const fan = new Shelly1({
-  host: '192.168.31.130',
-});
+const fan = new Shelly1({ host: '192.168.31.130' });
 
 // lazy observation on any status property change via RxJS
 fan.observe('relays.0.ison')

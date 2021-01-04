@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.json",
     "watch": "NODE_ENV=development DEBUG=shelly:* tsc-watch --build tsconfig.json --onSuccess 'node ./lib/examples/temp.js'",
     "lint": "eslint .",
-    "test": "jest --coverage",
+    "test": "jest --coverage --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
     "format": "prettier --write '{src,__tests__}/**/*.{js,ts,md}'",
     "prepublishOnly": "npm run test && npm run build"
