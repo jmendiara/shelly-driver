@@ -254,6 +254,7 @@ export class ShellyDevice {
   /**
    * Observes a device property, emitting the current value and tracking
    * future changes for the property
+   * TODO: Multicast and refcount to the same path
    */
   observe(path: ShellyStatusProperty): Observable<StatePropertyValue> {
     debug(`[${this.host}]`, `Observing ${path}`);
