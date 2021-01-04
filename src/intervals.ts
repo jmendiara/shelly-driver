@@ -1,4 +1,4 @@
-import { interval, Observable } from 'rxjs';
+import { Observable, interval } from 'rxjs';
 import { shareReplay, finalize } from 'rxjs/operators';
 
 const intervals = new Map<number, Observable<number>>();

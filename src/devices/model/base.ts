@@ -1,5 +1,7 @@
 import { ShellyModelIdentifier } from './common';
-import { StatePropertyValue } from './state';
+
+export type StatePropertyValue = number | string | boolean;
+export type StateProperty = { key: string; value: StatePropertyValue };
 
 type Custom = (value: unknown) => StatePropertyValue;
 export type ShellyTrackPropertyType = typeof Boolean | typeof Number | typeof String | Custom;

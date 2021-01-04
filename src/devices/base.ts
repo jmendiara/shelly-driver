@@ -1,10 +1,9 @@
 import { ClientFactory, defaultClientFactory } from '../clients';
 import { AxiosInstance } from 'axios';
 import qs from 'qs';
-import { Observable } from 'rxjs';
+import { concat, defer, EMPTY, Observable, Subject } from 'rxjs';
 import { CoIoTClient, CoIoTDescription, CoIoTStatus } from 'coiot-coap';
-import { DeviceState } from './state';
-import { finalize, map, switchMapTo, tap } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, finalize, map, pluck, retry } from 'rxjs/operators';
 import {
   Context,
   StatePropertyValue,
@@ -28,9 +27,12 @@ import {
   ShellyStatusProperty,
   ShellyWiFiScanAttributes,
   ShellyModelIdentifier,
+  StateProperty,
 } from './model';
 import { Tracker } from '../trackers';
 import { deviceMap } from './registry';
+import Debug from 'debug';
+const debug = Debug('shelly:device:base');
 
 export interface ShellyDeviceOptions {
   host: string;
@@ -39,17 +41,13 @@ export interface ShellyDeviceOptions {
 
 export class ShellyDevice {
   public host: string;
-  /** The general options passed to the base instance for a shelly device */
+  public type: ShellyModelIdentifier = 'UNKNOWN';
 
   /** the httpclient to interact with the HTTP API */
   protected httpClient: AxiosInstance;
   protected tracker: Tracker;
-
   protected coiotClient: CoIoTClient;
-
-  protected state: DeviceState;
-
-  public type: ShellyModelIdentifier = 'UNKNOWN';
+  protected changes$ = new Subject<StateProperty>();
 
   constructor(options: ShellyDeviceOptions) {
     this.host = options.host;
@@ -59,7 +57,6 @@ export class ShellyDevice {
     this.httpClient = clientFactory.getHttpClient(this);
     this.coiotClient = clientFactory.getCoiotClient(this);
     this.tracker = clientFactory.getTracker(this);
-    this.state = new DeviceState(this);
   }
 
   /**
@@ -255,24 +252,34 @@ export class ShellyDevice {
   }
 
   /**
-   * Observes a property
+   * Observes a device property, emitting the current value and tracking
+   * future changes for the property
    */
   observe(path: ShellyStatusProperty): Observable<StatePropertyValue> {
-    const sub = this.tracker.track(path).subscribe((prop) => this.state.update(prop));
-    return this.state.observe(path).pipe(
-      finalize(() => {
-        console.log(`[${this.host}]`, `DEVICE Stop observing ${path}`);
-        sub.unsubscribe();
-      }),
-    );
-    return this.tracker.track(path).pipe(
-      tap((prop) => console.log('REcibido en ell device', prop)),
-      tap((prop) => this.state.update(prop)),
+    debug(`[${this.host}]`, `Observing ${path}`);
 
-      switchMapTo(this.state.changes$),
-      map((prop) => prop.value),
-      // switchMapTo(this.state.observe(path)),
-      finalize(() => console.log(`[${this.host}]`, `DEVICE Stop observing ${path}`)),
+    const sub = this.tracker.track(path).subscribe((prop) => this.changes$.next(prop));
+
+    const initial$ = defer(() => this.getStatus()).pipe(
+      retry(2),
+      catchError((err: Error) => {
+        debug(`[${this.host}] failed to get http status: ${err.message}`);
+        return EMPTY;
+      }),
+      pluck<ShellyStatus, StatePropertyValue>(...path.split('.')),
+    );
+
+    const diff$ = this.changes$.pipe(
+      filter((observation) => observation.key === path),
+      map((observation) => observation.value),
+    );
+
+    return concat(initial$, diff$).pipe(
+      distinctUntilChanged(),
+      finalize(() => {
+        sub.unsubscribe();
+        debug(`[${this.host}]`, `Stop observing ${path}`);
+      }),
     );
   }
 
