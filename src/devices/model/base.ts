@@ -182,6 +182,12 @@ export interface ShellySettingsAttributes {
 
   /** Current firmware mode, only for devices where this is changeable (e.g. Shelly RGBW2 Color/RGBW2 White) */
   fw_mode?: string;
+
+  /** hardware version. Only available on some devices. Warning! seen experimentally, not documented */
+  hwinfo?: {
+    hw_revision: string;
+    batch_id: number;
+  };
 }
 
 export interface ShellySettingsParameters {
