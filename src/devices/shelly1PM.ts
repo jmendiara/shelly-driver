@@ -61,8 +61,8 @@ export interface Shelly1PM extends Shelly1 {
   getSettings(context?: Context): Promise<Shelly1PMSettingsAttributtes>;
   setSettings(params: Partial<Shelly1PMSettingsParameters>, context?: Context): Promise<Shelly1PMSettingsAttributtes>;
   getStatus(context?: Context): Promise<Shelly1PMStatus>;
-  getRelay(context?: Context): Promise<Shelly1PMRelayAttributes>;
-  setRelay(params: Partial<Shelly1PMRelayParameters>, context?: Context): Promise<Shelly1PMRelayAttributes>;
+  getRelay(index: 0, context?: Context): Promise<Shelly1PMRelayAttributes>;
+  setRelay(index: 0, params: Partial<Shelly1PMRelayParameters>, context?: Context): Promise<Shelly1PMRelayAttributes>;
   observe(path: Shelly1PMStatusProperty, context?: Context): Observable<StatePropertyValue>;
 }
 

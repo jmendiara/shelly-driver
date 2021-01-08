@@ -22,19 +22,28 @@ import {
 import { MqttAdapters } from '../trackers';
 import qs from 'qs';
 import { deviceMap } from './registry';
+import { ShellyRelay } from './model/relay';
 
-export class Shelly1 extends ShellyDevice {
+export class Shelly1 extends ShellyDevice implements ShellyRelay {
   public type: ShellyModelIdentifier = 'SHSW-1';
 
   /** Shows current status of the output channel */
-  async getRelay(context?: Context): Promise<Shelly1RelayAttributes> {
-    const { data } = await this.httpClient.get<Shelly1RelayAttributes>(`/relay/0`, context);
+  async getRelay(index: 0, context?: Context): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.get<Shelly1RelayAttributes>(`/relay/${index}`, context);
     return data;
   }
 
   /** Accepts commands for controlling the channel. */
-  async setRelay(params: Partial<Shelly1RelayParameters>, context?: Context): Promise<Shelly1RelayAttributes> {
-    const { data } = await this.httpClient.post<Shelly1RelayAttributes>(`/relay/0`, qs.stringify(params), context);
+  async setRelay(
+    index: 0,
+    params: Partial<Shelly1RelayParameters>,
+    context?: Context,
+  ): Promise<Shelly1RelayAttributes> {
+    const { data } = await this.httpClient.post<Shelly1RelayAttributes>(
+      `/relay/${index}`,
+      qs.stringify(params),
+      context,
+    );
     return data;
   }
 
@@ -43,26 +52,31 @@ export class Shelly1 extends ShellyDevice {
    * for the single output channel in the relays array.
    * The channel index exists to preserve API compatibility with multi-channel Shelly devices.
    */
-  async getRelaySettings(context?: Context): Promise<Shelly1SettingsRelayAttributes> {
-    const { data } = await this.httpClient.get<Shelly1SettingsRelayAttributes>(`/settings/relay/0`, context);
+  async getRelaySettings(index: 0, context?: Context): Promise<Shelly1SettingsRelayAttributes> {
+    const { data } = await this.httpClient.get<Shelly1SettingsRelayAttributes>(`/settings/relay/${index}`, context);
     return data;
   }
 
   async setRelaySettings(
+    index: 0,
     params: Partial<Shelly1SettingsRelayParameters>,
     context?: Context,
   ): Promise<Shelly1SettingsRelayAttributes> {
     const { data } = await this.httpClient.post<Shelly1SettingsRelayAttributes>(
-      `/settings/relay/0`,
+      `/settings/relay/${index}`,
       qs.stringify(params),
       context,
     );
     return data;
   }
 
-  async setPowerSettings(params: Partial<Shelly1PowerParameters>, context?: Context): Promise<Shelly1PowerParameters> {
+  async setPowerSettings(
+    index: 0,
+    params: Partial<Shelly1PowerParameters>,
+    context?: Context,
+  ): Promise<Shelly1PowerParameters> {
     const { data } = await this.httpClient.post<Shelly1PowerParameters>(
-      `/settings/power/0`,
+      `/settings/power/${index}`,
       qs.stringify(params),
       context,
     );
@@ -83,11 +97,12 @@ export class Shelly1 extends ShellyDevice {
   }
 
   async setExternalHumiditySettings(
+    index: 0,
     params: Partial<Shelly1ExternalHumidityParameters>,
     context?: Context,
   ): Promise<Shelly1ExternalHumidityParameters> {
     const { data } = await this.httpClient.post<Shelly1ExternalHumidityParameters>(
-      `/settings/ext_humidity/0`,
+      `/settings/ext_humidity/${index}`,
       qs.stringify(params),
       context,
     );
@@ -95,11 +110,12 @@ export class Shelly1 extends ShellyDevice {
   }
 
   async setExternalSwitchSettings(
+    index: 0,
     params: Partial<Shelly1ExternalSwitchParameters>,
     context?: Context,
   ): Promise<Shelly1ExternalSwitchParameters> {
     const { data } = await this.httpClient.post<Shelly1ExternalSwitchParameters>(
-      `/settings/ext_switch/0`,
+      `/settings/ext_switch/${index}`,
       qs.stringify(params),
       context,
     );

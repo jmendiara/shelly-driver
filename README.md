@@ -26,7 +26,7 @@ const fan = new Shelly1({ host: '192.168.31.130' });
 fan.observe('relays.0.ison')
   .subscribe((isOn) => console.log('The device is turned', isOn ? 'on': 'off'));
 
-const settings = await fan.setRelay({ turn: 'on' });
+const settings = await fan.setRelay(0, { turn: 'on' });
 ```
 
 ## Devices supported
