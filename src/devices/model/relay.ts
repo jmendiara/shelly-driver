@@ -2,6 +2,8 @@ import { Context } from './common';
 
 export interface ShellyRelay {
   getRelay(index: number, context?: Context): Promise<ShellyRelayAttributes>;
+  setRelay(index: number, params: Partial<ShellyRelayParameters>, context?: Context): Promise<ShellyRelayAttributes>;
+  getRelaySettings(index: number, context?: Context): Promise<ShellyRelaySettingsAttributes>;
 }
 
 export interface ShellyRelayAttributes {
