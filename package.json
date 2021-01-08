@@ -1,6 +1,6 @@
 {
   "name": "shelly-driver",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Allterco Shelly devices driver",
   "author": "Javier Mendiara Cañardo <jmendiara@gmail.com>",
   "license": "Apache-2.0",
@@ -25,7 +25,7 @@
     "src"
   ],
   "bin": {
-    "boilerplate": "./bin/boilerplate"
+    "boilerplate": "bin/boilerplate"
   },
   "devDependencies": {
     "@types/bonjour": "^3.5.8",
