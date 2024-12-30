@@ -17,7 +17,7 @@ const httpclientConfig: AxiosRequestConfig = {
     'Content-Type': 'application/x-www-form-urlencoded',
     'User-Agent': 'ShellyDriver',
   },
-  timeout: 5000,
+  timeout: 15000,
 };
 
 export const defaultClientFactory: ClientFactory = {

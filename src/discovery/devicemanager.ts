@@ -12,22 +12,9 @@ export class DeviceManager {
   devices$ = new ReplaySubject<ShellyDevice>();
   httpBrowser: Browser;
 
-  constructor() {
-    this.httpBrowser = bonjour.find({ type: 'http' }, this.onUp.bind(this));
-  }
-
-  private async onUp({ host }: RemoteService) {
+  private async onUp({ host, type }: RemoteService) {
     try {
-      // TODO: This can be a raw request
-      const dummyDevice = new ShellyDevice({ host });
-      const { type } = await dummyDevice.getBasicSettings();
-      const DeviceImpl = deviceMap.get(type);
-      let device;
-      if (DeviceImpl) {
-        device = new DeviceImpl({ host });
-      } else {
-        device = new ShellyDevice({ host });
-      }
+      const device = await this.createDevice({ host });
       debug(`[${device.host}] New ${device.type} shelly`);
       this.devices$.next(device);
     } catch (err) {
@@ -38,12 +25,35 @@ export class DeviceManager {
   discover(): Observable<ShellyDevice> {
     return new Observable((susbcriber) => {
       debug(`Start`);
-      this.httpBrowser.start();
+      if (!this.httpBrowser) {
+        // shelly1pm advertises itself as `type: shelly`. Other shellies as `type: http`, so cannot trust
+        // the type anymore
+        this.httpBrowser = bonjour.find({}, this.onUp.bind(this));
+      } else {
+        this.httpBrowser.start();
+      }
       susbcriber.next();
       return () => {
         debug(`Stop`);
         this.httpBrowser.stop();
       };
     }).pipe(switchMapTo(this.devices$));
+  }
+
+  /**
+   * Creates a device instance to use later
+   */
+  async createDevice({ host }: { host: string }): Promise<ShellyDevice> {
+    // XXX : This can be a raw request to /shelly endpoint
+    const dummyDevice = new ShellyDevice({ host });
+    const { type } = await dummyDevice.getBasicSettings();
+    const DeviceImpl = deviceMap.get(type);
+    let device: ShellyDevice;
+    if (DeviceImpl) {
+      device = new DeviceImpl({ host });
+    } else {
+      device = new ShellyDevice({ host });
+    }
+    return device;
   }
 }
