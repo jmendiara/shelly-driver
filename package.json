@@ -1,6 +1,6 @@
 {
   "name": "shelly-driver",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Allterco Shelly devices driver",
   "author": "Javier Mendiara Cañardo <jmendiara@gmail.com>",
   "license": "Apache-2.0",
